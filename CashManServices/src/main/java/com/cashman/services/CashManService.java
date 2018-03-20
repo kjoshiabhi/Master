@@ -2,6 +2,8 @@ package com.cashman.services;
 
 import java.util.Collection;
 
+import javax.mail.MessagingException;
+
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -31,7 +33,7 @@ public interface CashManService {
 	
 	@PostMapping(value = "/withdrawAMount/{amount}")
 	@ResponseBody
-	ServiceResponse<String> withdrawAMount(@PathVariable int amount);
+	ServiceResponse<String> withdrawAMount(@PathVariable int amount) throws MessagingException;
 	
 
 }

@@ -1,8 +1,22 @@
 package com.cashman.serviceImpl;
 
+import java.time.ZonedDateTime;
 import java.util.Collection;
+import java.util.Properties;
+
+import javax.mail.Message;
+import javax.mail.MessagingException;
+import javax.mail.PasswordAuthentication;
+import javax.mail.Session;
+import javax.mail.Transport;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -23,6 +37,15 @@ public class CashManServiceImpl implements CashManService {
 
 	@Autowired
 	public AmountRepo amountRepo;
+
+	@Value("${mail.username}")
+	public String username;
+
+	@Value("${password}")
+	public String password;
+
+	@Value("${notifyUser}")
+	public String notifyUser;
 
 	@Override
 	public ServiceResponse<Collection<CashMan>> getTotalAmount() {
@@ -74,6 +97,7 @@ public class CashManServiceImpl implements CashManService {
 			}
 			Amount currentAmount = new Amount();
 			currentAmount.setCurrentAmount(totalCash);
+			currentAmount.setLastUpdateTime(ZonedDateTime.now());
 			amountRepo.save(currentAmount);
 		} catch (Throwable th) {
 			System.out.println(th.getMessage());
@@ -96,7 +120,7 @@ public class CashManServiceImpl implements CashManService {
 	}
 
 	@Override
-	public ServiceResponse<String> withdrawAMount(@PathVariable int amount) {
+	public ServiceResponse<String> withdrawAMount(@PathVariable int amount) throws MessagingException {
 
 		ServiceResponse<String> response = new ServiceResponse<>();
 		try {
@@ -122,20 +146,54 @@ public class CashManServiceImpl implements CashManService {
 			CashMan getTwentyNotes = cashManRepo.findByNote(Note.valueOf("TWENTY"));
 			getTwentyNotes.getCurrentNotes();
 			if (countAmount == reqWithdraw) {
-				getFiftyNotes.setCurrentNotes(getFiftyNotes.getCurrentNotes() - fiftyCount);
-				getFiftyNotes.setPreviousNotes(getFiftyNotes.getCurrentNotes());
-				getTwentyNotes.setCurrentNotes(getTwentyNotes.getCurrentNotes() - twentyCount);
-				getTwentyNotes.setPreviousNotes(getTwentyNotes.getCurrentNotes());
-				cashManRepo.save(getFiftyNotes);
-				cashManRepo.save(getTwentyNotes);
-				getTotalCash();
-				response.setData("Amount dispended");
+				if (fiftyCount < getFiftyNotes.getCurrentNotes()) {
+					if (twentyCount < getTwentyNotes.getCurrentNotes()) {
+						getFiftyNotes.setCurrentNotes(getFiftyNotes.getCurrentNotes() - fiftyCount);
+						getFiftyNotes.setPreviousNotes(getFiftyNotes.getCurrentNotes());
+						getTwentyNotes.setCurrentNotes(getTwentyNotes.getCurrentNotes() - twentyCount);
+						getTwentyNotes.setPreviousNotes(getTwentyNotes.getCurrentNotes());
+						cashManRepo.save(getFiftyNotes);
+						cashManRepo.save(getTwentyNotes);
+						getTotalCash();
+						if (getTwentyNotes.getCurrentNotes() < 10 && getFiftyNotes.getCurrentNotes() < 10) {
+							notifyAdmin();
+						}
+						response.setData("Amount dispended");
+					}
+				} else {
+					response.setData("unable to  dispense Amount ");
+				}
 			} else {
-				response.setData("unable to  dispense Amount");
+				response.setData("ATM with only $20 and $50 notes, it is not possible to dispense : " + reqWithdraw);
 			}
 		} catch (Throwable th) {
 			response.setError("Error in Amount dispense: " + th.getMessage());
 		}
 		return response;
+	}
+
+	@Async
+	public void notifyAdmin() throws MessagingException {
+		String host = "smtp.gmail.com";
+		Properties props = new Properties();
+		props.put("mail.smtp.auth", "true");
+		props.put("mail.smtp.starttls.enable", "true");
+		props.put("mail.smtp.host", host);
+		props.put("mail.smtp.port", "587");
+		Session session = Session.getInstance(props, new javax.mail.Authenticator() {
+			protected PasswordAuthentication getPasswordAuthentication() {
+				return new PasswordAuthentication(username, password);
+			}
+		});
+		try {
+			Message message = new MimeMessage(session);
+			message.setFrom(new InternetAddress(username));
+			message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(notifyUser));
+			message.setSubject("ATM  Notification");
+			message.setText("ATM out off cash ");
+			Transport.send(message);
+		} catch (MessagingException e) {
+			throw new RuntimeException(e);
+		}
 	}
 }
