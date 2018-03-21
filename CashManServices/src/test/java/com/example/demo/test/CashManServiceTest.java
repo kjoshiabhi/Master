@@ -66,4 +66,32 @@ public class CashManServiceTest extends CashManServicesApplicationTests {
 
 	}
 
+	/**
+	 * Junit test case for getCurrentAmount
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	@Transactional
+	public void getCurrentAmountTest() throws Exception {
+
+		this.mockMvc.perform(get("/api/cash/getCurrentAmount")).andExpect(status().isOk())
+				.andExpect(content().contentType("application/json;charset=UTF-8"));
+
+	}
+
+	/**
+	 * Junit test case for withdrawAMount
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	@Transactional
+	public void withdrawAMountTest() throws Exception {
+
+		this.mockMvc.perform(post("/api/cash/withdrawAMount/1000").contentType("application/json;charset=UTF-8"))
+				.andExpect(status().isOk()).andExpect(content().contentType("application/json;charset=UTF-8"));
+
+	}
+
 }
