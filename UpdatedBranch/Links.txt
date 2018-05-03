@@ -1,0 +1,20 @@
+
+
+OAuth
+
+https://stackoverflow.com/questions/4201431/what-exactly-is-oauth-open-authorization
+
+Spring security 
+
+--> Basic Authentication --- http://www.devglan.com/spring-security/spring-boot-security-rest-basic-authentication
+--> Form login
+--> UserdetialService
+--> Filters
+--> JdbcAuthentication --- https://dzone.com/articles/spring-security-4-authenticate-and-authorize-users
+--> LdapAuthentication --- http://www.opencodez.com/java/configure-ldap-authentication-using-spring-boot.htm
+
+
+
+Spring Microservices
+
+Basics---https://dzone.com/articles/microservice-spring-cloud-eureka-server-configurat
