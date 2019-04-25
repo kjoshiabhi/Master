@@ -47,7 +47,7 @@ public class ProductServiceImpl implements ProductService {
 			}
 
 		} catch (Throwable th) {
-			response.setError("error in  getting product");
+			response.setError("Error in  getting product details.");
 		}
 
 		return response;
