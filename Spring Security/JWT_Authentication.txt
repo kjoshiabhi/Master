@@ -1,0 +1,71 @@
+package com.product.auth;
+
+import static com.product.auth.SecurityConstants.SIGN_UP_URL;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Configurable;
+import org.springframework.context.annotation.Bean;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.web.AuthenticationEntryPoint;
+
+import com.product.auth.JWTAuthenticationFilter;
+import com.product.auth.JWTAuthorizationFilter;
+
+@Configurable
+@EnableWebSecurity
+public class SecurityConfigAdapter extends WebSecurityConfigurerAdapter {
+
+	@Autowired
+	private AuthenticationEntryPoint authEntryPoint;
+
+	@Autowired
+	private UserDetailsService userDetailsService;
+
+	@Bean
+	public BCryptPasswordEncoder bCryptPasswordEncoder() {
+		return new BCryptPasswordEncoder();
+	}
+
+	public void WebSecurity(UserDetailsService userDetailsService) {
+		this.userDetailsService = userDetailsService;
+	}
+
+	@Override
+	protected void configure(HttpSecurity http) throws Exception {
+
+
+		
+		http.cors()
+		.and()
+		.authorizeRequests()
+		.antMatchers(HttpMethod.POST, SIGN_UP_URL).hasAnyAuthority("USER", "ADMIN","DRIVER","DCMANAGER")
+		.anyRequest()
+		.authenticated().antMatchers("/**").anonymous().and().csrf().disable()
+		.formLogin()
+		.loginPage("/index.html")
+		.loginProcessingUrl("/login").and()
+		.logout()
+		.deleteCookies("JSESSIONID")
+		.invalidateHttpSession(true)
+		.and().sessionManagement()
+		.maximumSessions(1)
+		.and()
+		.sessionFixation()
+		.migrateSession().and()
+		.addFilter(new JWTAuthenticationFilter(authenticationManager()))
+		.addFilter(new JWTAuthorizationFilter(authenticationManager()))
+		.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+	}
+
+	@Override
+	protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+		auth.userDetailsService(userDetailsService).passwordEncoder(bCryptPasswordEncoder());
+	}
+}
