@@ -1,0 +1,71 @@
+<div [hidden]="submitted" style="width: 1050px;">
+  <form (ngSubmit)="onSubmit()">
+  <div class="form-group">
+   <table >
+    <tr>
+      <td width='90px'><label for="entityId">Entity ID</label></td>
+      <td  width='180px'><input type="text" class="form-control" id="entityId" required [(ngModel)]="historylog.entityId" name="entityId"></td>
+      <td  width='50px'></td>
+      <td width='110px'><label for="entityClass">Entity Class</label></td>
+      <td width='220px'><input type="text" class="form-control" id="entityClass" required [(ngModel)]="historylog.entityClass" name="entityClass"></td>
+      <td  width='60px'></td>
+      <td width='70px'><label for="dateOfChange">Date</label></td>
+      <td><input type="text" class="form-control" id="dateOfChange" required [(ngModel)]="historylog.dateOfChange" name="dateOfChange"></td>
+    </tr>
+    <tr></tr></table>
+  </div>
+  <div class="form-group"></div>
+    <div class="form-group">
+        <table >
+    <tr>
+      <td width='90px'><label for="userId">User ID</label></td>
+      <td  width='180px'><input type="text" class="form-control" id="userId" required [(ngModel)]="historylog.userId" name="userId"></td>
+      <td  width='50px'></td>
+      <td width='110px'><label for="action">Action Type</label></td>
+      <td width='220px'><input type="text" class="form-control" id="action" required [(ngModel)]="historylog.action" name="action"></td>
+      <td  width='60px'></td>
+      <td width='70px'><label for="Property">Property</label></td>
+      <td><input type="text" class="form-control" id="Property" required [(ngModel)]="historylog.Property" name="Property"></td>
+    </tr>
+  </table>
+  </div>
+  <div class="form-group"></div>
+ <table>
+ <tr>
+<td width='830px'></td>
+<td width='80px'><button type="reset" class="btn btn-success">Reset</button></td>
+<td><button type="submit" class="btn btn-success">Search</button></td>
+ </tr>
+</table>
+</form> 
+</div>
+<div class="form-group"></div>
+<div class="panel panel-primary">
+  <div class="panel-heading">
+    <h5>History Log Details</h5>
+  </div>
+  <div class="panel-body" style="width: 1050px;">
+    <table class="table table-striped width='80px' ">
+      <thead>
+        <tr>
+          <th>Entry Id</th>
+          <th>Property</th>
+          <th>PropertyClass</th>         
+          <th>PreviousValue</th>
+          <th>NewValue</th>
+          <th>OldLinkId</th>
+          <th>NewLinkId</th>        
+        </tr>
+      </thead>
+      <tbody>
+          <tr *ngFor="let historylog of historylog | async">
+              <td>{{historylog.obj.data.log_id}}</td>
+              <td>{{historylog.UserID}}</td>
+              <td>{{historylog.EntityClass}}</td>
+          </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+
